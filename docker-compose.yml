@@ -1,24 +1,37 @@
-version: '3.3'
+version: '3.4'
 
 services:
+  python:
+    build:
+      context: .
+      dockerfile: python_Dockerfile # specific Dockerfile to build an
+    # Python image build with python_Dockerfile
+    image: my_python
+    container_name: worker
+    depends_on:
+      - db
+    command: ["python3", "main.py"]
+    volumes:
+      - ./data:/data
+    environment:
+      POSTGRES_USER: "myUser"
+      POSTGRES_PASSWORD: "lmgrQ0c7SlySb3gG"
+      POSTGRES_DB: "test_db"
+      POSTGRES_HOST: 'db_container'
+      POSTGRES_PORT: '5432'
+      TXT_BASE_PATH: "/data/base_teste.txt"
+      DATABASE_SETUP_SQL_FILE: "/data/tables.sql"
+
   db:
       container_name: db_container
       image: postgres
       environment:
         POSTGRES_USER: "myUser"
-        POSTGRES_PASSWORD: "myPassword"
-        POSTGRES_DB: test_db
-        PGDATA: /var/lib/postgresql/data/pgdata
+        POSTGRES_PASSWORD: "lmgrQ0c7SlySb3gG"
+        POSTGRES_DB: "test_db"
+        PGDATA: "/var/lib/postgresql/data/pgdata"
 
-      ports:
-        - "5432:5432"
+#      ports:
+#        - "5432:5432"
       volumes:
         - ./pgdata:/var/lib/postgresql/data/pgdata
-#  worker:
-#    container_name: python_worker
-#    image: my_python
-#    dockerfile: Dockerfile
-#    volumes:
-#      - py_files:/
-
-#

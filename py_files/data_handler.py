@@ -1,6 +1,5 @@
 from data_objects import Customer, Store, Relationship, CustomerErrors, CustomerAndStore
 import sys
-import time
 import numpy as np
 
 
@@ -85,23 +84,22 @@ class DataHandler:
         no_header_database = database_lines[1:]
 
         # Creates data objects, data verification is done here down below.
-        objects_start = time.time()
         for data in no_header_database:
             try:
                 cs = Customer(data.split())  # Creates a customer object.
                 customers.append(cs)  # Adds the Customer created into a list.
 
-                # Deals with main stores
-                if cs.main_store != 'NULL':  # Creates an relationship object if main_store is not NULL
-                    main_store_rl_id = Relationship.created_relationships_ids[Relationship.relationships_available[0]]
-                    # Adds the relationship created into a list
-                    cs_and_stores.append(CustomerAndStore(cs.cpf, cs.main_store, main_store_rl_id))
-
                 # Deals with last stores
                 if cs.last_store != 'NULL':  # Creates an relationship object if last_store is not NULL
-                    last_store_rl_id = Relationship.created_relationships_ids[Relationship.relationships_available[1]]
+                    last_store_rl_id = Relationship.created_relationships_ids[Relationship.relationships_available[0]]
                     # Adds the relationship created into a list
-                    cs_and_stores.append(CustomerAndStore(cs.cpf, cs.main_store, last_store_rl_id))
+                    cs_and_stores.append(CustomerAndStore(cs.cpf, cs.last_store, last_store_rl_id))
+
+                # Deals with main stores
+                if cs.main_store != 'NULL':  # Creates an relationship object if main_store is not NULL
+                    main_store_rl_id = Relationship.created_relationships_ids[Relationship.relationships_available[1]]
+                    # Adds the relationship created into a list
+                    cs_and_stores.append(CustomerAndStore(cs.cpf, cs.main_store, main_store_rl_id))
 
             # Error handling
             except ConnectionError:
@@ -109,23 +107,14 @@ class DataHandler:
             except ValueError as exc:
                 CustomerErrors.error_insert(data, str(exc.args[0]))
 
-        objects_finish = time.time()
-        print(f'OBJECTS CREATING TIME: {objects_finish - objects_start} s.')
-
         # Spliting Customers and Relationships to bulk INSERT
         cs_bulks = DataHandler.data_split(customers)
         cs_and_st_bulks = DataHandler.data_split(cs_and_stores)
 
         # INSERTing customers into Database
-        cs_bulk_start = time.time()
         for cs_bulk in cs_bulks:
             Customer.bulk_insert(cs_bulk)
-        cs_bulk_finish = time.time()
-        print(f'CS BULK TIME: {cs_bulk_finish - cs_bulk_start} s.')
 
         # INSERTing customers' relationships into Database
-        csst_start = time.time()
         for cs_and_st_bulk in cs_and_st_bulks:
             CustomerAndStore.bulk_insert(cs_and_st_bulk)
-        csst_finish = time.time()
-        print(f'CS and ST BULK TIME: {csst_finish - csst_start} s.')

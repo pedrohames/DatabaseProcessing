@@ -1,12 +1,19 @@
+import time
+
 import psycopg2
 import os
+import socket
 
 
 class DB:
     """
     A simple DB Class used to interact with Postgres database.
     DB = Data Access Object
+    first_connection_timeout: timeout for the first connection into database
     """
+
+    first_connection_timeout = 10
+
     def __init__(self) -> None:
         """
         Starts a connection with DB, some env vars need to be set before call it.
@@ -27,9 +34,22 @@ class DB:
 
     def init_connection(self) -> None:
         """
-        Uses self attributes to start a connection with DB.
+        First checks if the database are able to receive connections,
+        then uses its attributes to start a connection with DB.
         :return: None, but it can raise an exception in case connection fails.
         """
+
+        attempt = 0
+        while attempt < DB.first_connection_timeout:
+            try:
+                if DB.check_port(self.host, self.port):
+                    break
+            except ConnectionError as exc:
+                attempt += 1
+                if attempt == DB.first_connection_timeout:
+                    raise exc
+                time.sleep(1)
+
         try:
             self.db_conn = psycopg2.connect(dbname=self.database,
                                             user=self.user,
@@ -95,3 +115,24 @@ class DB:
         with open(path) as file:
             sql_schema = file.read()
             db.execute_query(sql_schema, commit=True)
+
+    @staticmethod
+    def check_port(host: str, port: str) -> bool:
+
+        """
+        Try to connect to a port
+        Parameter:
+            host (str): Host to check
+            port (int): Port to be checked
+        Returns:
+            True if can connect, Raise an exception if can't
+        """
+        # Tries to connect a TCP socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.settimeout(1)
+            s.connect((host, int(port)))
+            s.shutdown(2)
+            return True
+        except Exception:
+            raise ConnectionError(f"Unable to connect into {host}:{port}")

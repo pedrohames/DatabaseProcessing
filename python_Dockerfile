@@ -1,0 +1,19 @@
+# Dockerfile
+
+# Uses python image version 3.8 from docker-hub
+FROM python:3.8
+
+# Allows python output to be directly printed on terminal
+ENV PYTHONUNBUFFERED=1
+
+# Sets working directory
+WORKDIR /
+
+# Copy requirements.txt file to the image during build process
+COPY requirements.txt .
+
+# Install all requirements
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy python code files to the image
+COPY py_files/* /

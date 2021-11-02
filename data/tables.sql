@@ -20,9 +20,9 @@ CREATE TABLE customers(
     cpf BIGINT UNIQUE NOT NULL,
     private BOOLEAN,
     uncompleted BOOLEAN,
-    last_pucharse_date DATE,
-    last_ticket_value NUMERIC,
+    last_purchase_date DATE,
     avg_ticket_value NUMERIC,
+    last_ticket_value NUMERIC,
     PRIMARY KEY (cpf)
 );
 CREATE TABLE customers_errors(

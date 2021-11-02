@@ -64,9 +64,9 @@ class Customer:
             raise ValueError(f'Invalid CPF: [{elements[0]}]')
         self.private = bool(int(elements[1]))
         self.uncompleted = bool(int(elements[2]))
-        self.last_pucharse_date = f"'{elements[3]}'" if elements[3] != 'NULL' else 'NULL'
-        self.last_ticket_value = elements[4].replace(',', '.')
-        self.avg_ticket_value = elements[5].replace(',', '.')
+        self.last_purchase_date = f"'{elements[3]}'" if elements[3] != 'NULL' else 'NULL'
+        self.avg_ticket_value = elements[4].replace(',', '.')
+        self.last_ticket_value = elements[5].replace(',', '.')
         self.main_store = Store(elements[6]).cnpj if elements[6] != 'NULL' else 'NULL'
         self.last_store = Store(elements[7]).cnpj if elements[7] != 'NULL' else 'NULL'
         if db_sync:
@@ -79,10 +79,10 @@ class Customer:
         """
         db = DB()
         query = f"""
-                INSERT INTO customers(cpf, private, uncompleted, last_pucharse_date, 
-                                      last_ticket_value, avg_ticket_value)
-                VALUES ({self.cpf}, {self.private}, {self.uncompleted}, {self.last_pucharse_date},
-                        {self.last_ticket_value}, {self.avg_ticket_value});
+                INSERT INTO customers(cpf, private, uncompleted, last_purchase_date, 
+                                      avg_ticket_value, last_ticket_value)
+                VALUES ({self.cpf}, {self.private}, {self.uncompleted}, {self.last_purchase_date},
+                        {self.avg_ticket_value}, {self.last_ticket_value});
                 """
         db.execute_query(query, commit=True)
 
@@ -95,17 +95,17 @@ class Customer:
         db = DB()
 
         # Creating Multi-value INSERT query below.
-        query = """INSERT INTO customers(cpf, private, uncompleted, last_pucharse_date, 
-                                              last_ticket_value, avg_ticket_value)
+        query = """INSERT INTO customers(cpf, private, uncompleted, last_purchase_date, 
+                                              avg_ticket_value, last_ticket_value)
                    VALUES"""
         if len(customers) > 1:
             for cs in customers[:-1]:
-                values = f"""({cs.cpf}, {cs.private}, {cs.uncompleted}, {cs.last_pucharse_date}, 
-                {cs.last_ticket_value}, {cs.avg_ticket_value}),"""
+                values = f"""({cs.cpf}, {cs.private}, {cs.uncompleted}, {cs.last_purchase_date}, 
+                {cs.avg_ticket_value}, {cs.last_ticket_value}),"""
                 query += values
         last_cs = customers[-1]
-        query += f"""({last_cs.cpf}, {last_cs.private}, {last_cs.uncompleted}, {last_cs.last_pucharse_date}, 
-            {last_cs.last_ticket_value}, {last_cs.avg_ticket_value});"""
+        query += f"""({last_cs.cpf}, {last_cs.private}, {last_cs.uncompleted}, {last_cs.last_purchase_date}, 
+            {last_cs.avg_ticket_value}, {last_cs.last_ticket_value});"""
 
         # Executing query
         db.execute_query(query, commit=True)
@@ -127,7 +127,7 @@ class CustomerErrors:
                 INSERT INTO customers_errors(data, system_error)
                 VALUES ('{str(data)}', '{str(error)}');        
                 """
-        db.execute_query(query)
+        db.execute_query(query, commit=True)
 
 
 class Relationship:
@@ -138,7 +138,7 @@ class Relationship:
 
     """
     created_relationships_ids = {}
-    relationships_available = ['Main Store', 'Last Pucharse']
+    relationships_available = ['LAST PURCHASE', 'MAIN STORE']
 
     def __init__(self, summary: str) -> None:
         """
