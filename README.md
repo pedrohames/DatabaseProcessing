@@ -16,8 +16,11 @@ sudo ./docker_install.sh
 ```
 git clone https://github.com/pedrohames/DatabaseProcessing.git
 cd DatabaseProcessing
+rm pgdata/.gitkeep
 sudo docker-compose up
 ```
+> NOTE: file pgdata/.gitkeep must be removed before starting the docker because it is the data path of postgres and postgres needs an empty directory.
+
 ## Tips
 * ./pgdata/ must be there even if it is empty, this database is used to persist the data after stop postgres service.
 * If you want, some environment vars like database name, host, and port can be changed at docker-compose.yml.
